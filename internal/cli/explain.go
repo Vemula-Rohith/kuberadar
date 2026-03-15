@@ -7,8 +7,8 @@ import (
 	"charm.land/lipgloss/v2"
 	"github.com/spf13/cobra"
 
-	"github.com/kuberadar/kuberadar/internal/explain"
-	"github.com/kuberadar/kuberadar/internal/output"
+	"github.com/Vemula-Rohith/kuberadar/internal/explain"
+	"github.com/Vemula-Rohith/kuberadar/internal/output"
 )
 
 var explainCmd = &cobra.Command{

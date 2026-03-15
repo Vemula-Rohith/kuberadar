@@ -7,9 +7,9 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/kuberadar/kuberadar/internal/detectors"
-	"github.com/kuberadar/kuberadar/internal/model"
-	"github.com/kuberadar/kuberadar/internal/providers"
+	"github.com/Vemula-Rohith/kuberadar/internal/detectors"
+	"github.com/Vemula-Rohith/kuberadar/internal/model"
+	"github.com/Vemula-Rohith/kuberadar/internal/providers"
 )
 
 // Engine runs diagnostics for a given scope.

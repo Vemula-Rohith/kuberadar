@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"io"
 
-	"github.com/kuberadar/kuberadar/internal/model"
+	"github.com/Vemula-Rohith/kuberadar/internal/model"
 )
 
 // WriteJSON writes a Diagnosis as JSON to w.

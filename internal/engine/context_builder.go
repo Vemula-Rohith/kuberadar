@@ -6,9 +6,9 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 
-	"github.com/kuberadar/kuberadar/internal/detectors/utils"
-	"github.com/kuberadar/kuberadar/internal/model"
-	"github.com/kuberadar/kuberadar/internal/providers"
+	"github.com/Vemula-Rohith/kuberadar/internal/detectors/utils"
+	"github.com/Vemula-Rohith/kuberadar/internal/model"
+	"github.com/Vemula-Rohith/kuberadar/internal/providers"
 )
 
 // ContextBuilder builds model.Context for resources.

@@ -5,13 +5,13 @@ KubeRadar is a Kubernetes debugging and diagnostics CLI that helps developers di
 ## Installation
 
 ```bash
-go install github.com/kuberadar/kuberadar/cmd/kuberadar@latest
+go install github.com/Vemula-Rohith/kuberadar/cmd/kuberadar@latest
 ```
 
 Or build from source:
 
 ```bash
-git clone https://github.com/kuberadar/kuberadar
+git clone https://github.com/Vemula-Rohith/kuberadar
 cd kuberadar
 go build -o kuberadar ./cmd/kuberadar
 ```

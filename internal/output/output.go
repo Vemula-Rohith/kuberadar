@@ -6,7 +6,7 @@ import (
 
 	"charm.land/lipgloss/v2"
 
-	"github.com/kuberadar/kuberadar/internal/model"
+	"github.com/Vemula-Rohith/kuberadar/internal/model"
 )
 
 // Format types.

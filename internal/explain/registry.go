@@ -1,6 +1,6 @@
 package explain
 
-import "github.com/kuberadar/kuberadar/internal/constants"
+import "github.com/Vemula-Rohith/kuberadar/internal/constants"
 
 // Entry holds documentation for an issue ID.
 type Entry struct {

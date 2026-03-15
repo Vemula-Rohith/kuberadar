@@ -1,4 +1,4 @@
-module github.com/kuberadar/kuberadar
+module github.com/Vemula-Rohith/kuberadar
 
 go 1.25.5
 

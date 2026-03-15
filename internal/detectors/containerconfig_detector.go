@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/kuberadar/kuberadar/internal/constants"
-	"github.com/kuberadar/kuberadar/internal/detectors/utils"
-	"github.com/kuberadar/kuberadar/internal/model"
+	"github.com/Vemula-Rohith/kuberadar/internal/constants"
+	"github.com/Vemula-Rohith/kuberadar/internal/detectors/utils"
+	"github.com/Vemula-Rohith/kuberadar/internal/model"
 )
 
 // ContainerConfigDetector detects CreateContainerConfigError.

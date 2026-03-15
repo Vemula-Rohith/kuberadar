@@ -6,9 +6,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/kuberadar/kuberadar/internal/engine"
-	"github.com/kuberadar/kuberadar/internal/output"
-	"github.com/kuberadar/kuberadar/internal/providers"
+	"github.com/Vemula-Rohith/kuberadar/internal/engine"
+	"github.com/Vemula-Rohith/kuberadar/internal/output"
+	"github.com/Vemula-Rohith/kuberadar/internal/providers"
 )
 
 var (

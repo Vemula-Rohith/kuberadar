@@ -3,8 +3,8 @@ package cli
 import (
 	"os"
 
-	"github.com/kuberadar/kuberadar/internal/constants"
-	"github.com/kuberadar/kuberadar/internal/model"
+	"github.com/Vemula-Rohith/kuberadar/internal/constants"
+	"github.com/Vemula-Rohith/kuberadar/internal/model"
 )
 
 // Exit codes for CI integration:
