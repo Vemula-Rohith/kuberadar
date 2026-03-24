@@ -7,18 +7,23 @@ import (
 	"github.com/Vemula-Rohith/kuberadar/internal/model"
 )
 
-// Exit codes for CI integration:
+// Exit codes when --fail-on-issues is set (CI):
 // 0 = no issues
 // 1 = warnings only
 // 2 = critical issues
 const (
-	ExitSuccess   = 0
-	ExitWarnings  = 1
-	ExitCritical  = 2
+	ExitSuccess  = 0
+	ExitWarnings = 1
+	ExitCritical = 2
 )
 
-// ExitWithCode exits the process based on diagnosis severity.
-func ExitWithCode(d *model.Diagnosis) {
+// FinishDiagnosis exits the process if --fail-on-issues is set and severity demands it.
+// Otherwise the command returns normally (exit 0) — success means the scan completed,
+// not “no issues found”.
+func FinishDiagnosis(d *model.Diagnosis) {
+	if !failOnIssues {
+		return
+	}
 	hasCritical := false
 	hasWarning := false
 	for _, i := range d.Issues {

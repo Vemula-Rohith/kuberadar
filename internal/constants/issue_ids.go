@@ -7,4 +7,5 @@ const (
 	IssueIDImagePullBackOff       = "KR003"
 	IssueIDUnschedulablePod       = "KR004"
 	IssueIDCreateContainerConfigError = "KR005"
+	IssueIDStaleConfig                = "KR006"
 )

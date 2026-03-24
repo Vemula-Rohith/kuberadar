@@ -11,8 +11,8 @@ const (
 	IconCritical  = "✗"  // Critical severity
 	IconWarning   = "⚠"  // Warning severity
 	IconOK        = "✓"  // No issues / success
-	IconEvidence  = "→"  // Evidence section
-	IconRecommend = "◆"  // Recommendation section
+	IconEvidence  = "▸"  // Evidence section (match Summary / Recommendation)
+	IconRecommend = "▸"  // Recommendation section
 	IconResource  = "◉"  // Resource / pod
 )
 

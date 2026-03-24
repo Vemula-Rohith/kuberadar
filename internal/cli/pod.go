@@ -1,13 +1,13 @@
 package cli
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/spf13/cobra"
 
 	"github.com/Vemula-Rohith/kuberadar/internal/model"
 	"github.com/Vemula-Rohith/kuberadar/internal/output"
+	"github.com/Vemula-Rohith/kuberadar/internal/state"
 )
 
 var (
@@ -15,9 +15,15 @@ var (
 )
 
 var podCmd = &cobra.Command{
-	Use:   "pod [name]",
-	Short: "Diagnose a specific pod or all pods in namespace",
-	RunE:  runPod,
+	Use:   "pod [name|index]",
+	Short: "Diagnose a pod by name or by sweep row number (1, 2, … after kuberadar sweep)",
+	Long: `Diagnose pods in the current namespace, or a single pod by name.
+
+After kuberadar sweep, each issue row is numbered. Use that number to deep-dive without
+retyping the pod name, e.g. kuberadar pod 1 --diagnose
+
+Namespace for a numeric index comes from the saved sweep (not from -n).`,
+	RunE: runPod,
 }
 
 func init() {
@@ -32,9 +38,24 @@ func runPod(cmd *cobra.Command, args []string) error {
 		Diagnose:  diagnose,
 	}
 	if len(args) > 0 {
-		scope.Name = args[0]
+		arg := args[0]
+		if state.IsSweepIndexSyntax(arg) {
+			idx, err := state.ParseSweepIndex(arg)
+			if err != nil {
+				return fmt.Errorf("invalid sweep index %q", arg)
+			}
+			if ns, podName, err := state.ResolveSweepIndex(idx); err == nil {
+				scope.Namespace = ns
+				scope.Name = podName
+			} else {
+				// No sweep / out of range: treat as a pod whose name is digits (e.g. "1")
+				scope.Name = arg
+			}
+		} else {
+			scope.Name = arg
+		}
 	}
-	diagnosis, err := app.engine.Run(context.Background(), scope)
+	diagnosis, err := engineRun(cmd, scope)
 	if err != nil {
 		return fmt.Errorf("diagnosis failed: %w", err)
 	}
@@ -42,6 +63,6 @@ func runPod(cmd *cobra.Command, args []string) error {
 	if err := output.Print(diagnosis, outputFmt, opts); err != nil {
 		return err
 	}
-	ExitWithCode(diagnosis)
+	FinishDiagnosis(diagnosis)
 	return nil
 }

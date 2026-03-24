@@ -24,6 +24,14 @@ profile.cov
 go.work
 go.work.sum
 
+# web
+/web
+
+# DS Store
+.DS_Store
+
+kuberadar
+
 # env file
 .env
 

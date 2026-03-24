@@ -9,6 +9,7 @@ var PodDetectors = []Detector{
 	ImagePullDetector{},
 	ContainerConfigDetector{},
 	SchedulingDetector{},
+	StaleConfigDetector{},
 }
 
 // DetectorsForScope returns detectors that match the given scope type.

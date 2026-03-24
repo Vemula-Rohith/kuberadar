@@ -12,9 +12,10 @@ import (
 )
 
 var (
-	kubeconfig string
-	namespace  string
-	outputFmt  string
+	kubeconfig    string
+	namespace     string
+	outputFmt     string
+	failOnIssues  bool
 )
 
 // app holds shared state for CLI commands.
@@ -54,7 +55,7 @@ var rootCmd = &cobra.Command{
 		pvcProvider := providers.NewPVCProvider(client)
 		storageClassProvider := providers.NewStorageClassProvider(client)
 		cb := engine.NewContextBuilder(eventProvider, nodeProvider, podProvider, configProvider, pvcProvider, storageClassProvider)
-		app.engine = engine.NewEngine(podProvider, deployProvider, cb)
+		app.engine = engine.NewEngine(podProvider, deployProvider, configProvider, cb)
 		namespace = ns
 		return nil
 	},
@@ -64,4 +65,6 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&kubeconfig, "kubeconfig", "", "Path to kubeconfig file")
 	rootCmd.PersistentFlags().StringVarP(&namespace, "namespace", "n", "", "Kubernetes namespace (default from kubeconfig context)")
 	rootCmd.PersistentFlags().StringVarP(&outputFmt, "output", "o", output.FormatTable, "Output format: table, json")
+	rootCmd.PersistentFlags().BoolVar(&failOnIssues, "fail-on-issues", false,
+		"Exit non-zero when issues are found (1=warnings, 2=critical); for CI. Default: exit 0 if the scan succeeded")
 }

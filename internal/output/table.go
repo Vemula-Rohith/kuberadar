@@ -2,6 +2,7 @@ package output
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"unicode/utf8"
 
@@ -9,6 +10,7 @@ import (
 
 	"github.com/Vemula-Rohith/kuberadar/internal/constants"
 	"github.com/Vemula-Rohith/kuberadar/internal/model"
+	"github.com/Vemula-Rohith/kuberadar/internal/state"
 )
 
 const evidenceWrapWidth = 100 // wrap long lines at word boundaries
@@ -197,8 +199,31 @@ func FormatAsTable(d *model.Diagnosis, opts Options) string {
 		b.WriteString(headerResource + " " + headerIssue + " " + headerSeverity + "\n")
 		b.WriteString(strings.Repeat("─", colResource+colIssue+colSeverity+2) + "\n")
 	} else {
-		b.WriteString(headerResource + " " + headerIssue + " " + headerSeverity + "  " + headerMessage + "\n")
-		b.WriteString(strings.Repeat("─", colResource+colIssue+colSeverity+colMessage+3) + "\n")
+		// Sweep: # + pod name only (full name visible; use kuberadar pod <n> --diagnose)
+		const colIdx = 4
+		const colPod = 40
+		headerIdx := padCell(TableHeaderStyle.Render("#"), colIdx)
+		headerPod := padCell(TableHeaderStyle.Render("POD"), colPod)
+		b.WriteString(headerIdx + " " + headerPod + " " + headerIssue + " " + headerSeverity + "  " + headerMessage + "\n")
+		b.WriteString(strings.Repeat("─", colIdx+colPod+colIssue+colSeverity+colMessage+4) + "\n")
+		for i, issue := range d.Issues {
+			idx := padCell(strconv.Itoa(i+1), colIdx)
+			podName := issue.ResourceName
+			if _, pod, ok := state.ParseResourceName(issue.ResourceName); ok {
+				podName = pod
+			}
+			podCell := truncateByWidth(podName, colPod)
+			podCell = padCell(podCell, colPod)
+			issueID := padCell(issue.ID, colIssue)
+			sev := padCell(renderSeverity(issue.Severity), colSeverity)
+			msg := issue.Message
+			if len(msg) > colMessage {
+				msg = msg[:colMessage-3] + "..."
+			}
+			b.WriteString(idx + " " + podCell + " " + issueID + " " + sev + "  " + msg + "\n")
+		}
+		b.WriteString("\nUse kuberadar pod <#> --diagnose to inspect a row (e.g. kuberadar pod 1 --diagnose).\n")
+		return strings.TrimSuffix(b.String(), "\n")
 	}
 	for _, issue := range d.Issues {
 		resource := IconResource + " " + issue.ResourceKind + "/" + issue.ResourceName
@@ -208,12 +233,6 @@ func FormatAsTable(d *model.Diagnosis, opts Options) string {
 		sev := padCell(renderSeverity(issue.Severity), colSeverity)
 		if opts.SinglePod {
 			b.WriteString(resource + " " + issueID + " " + sev + "\n")
-		} else {
-			msg := issue.Message
-			if len(msg) > colMessage {
-				msg = msg[:colMessage-3] + "..."
-			}
-			b.WriteString(resource + " " + issueID + " " + sev + "  " + msg + "\n")
 		}
 	}
 	return strings.TrimSuffix(b.String(), "\n")

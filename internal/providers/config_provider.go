@@ -3,6 +3,7 @@ package providers
 import (
 	"context"
 
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
@@ -27,4 +28,30 @@ func (p *ConfigProvider) ConfigMapExists(ctx context.Context, namespace, name st
 func (p *ConfigProvider) SecretExists(ctx context.Context, namespace, name string) bool {
 	_, err := p.client.CoreV1().Secrets(namespace).Get(ctx, name, metav1.GetOptions{})
 	return err == nil
+}
+
+// ListConfigMapsMap lists all ConfigMaps in the namespace keyed by name (one API call).
+func (p *ConfigProvider) ListConfigMapsMap(ctx context.Context, namespace string) (map[string]v1.ConfigMap, error) {
+	list, err := p.client.CoreV1().ConfigMaps(namespace).List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
+	m := make(map[string]v1.ConfigMap, len(list.Items))
+	for i := range list.Items {
+		m[list.Items[i].Name] = list.Items[i]
+	}
+	return m, nil
+}
+
+// ListSecretsMap lists all Secrets in the namespace keyed by name (one API call).
+func (p *ConfigProvider) ListSecretsMap(ctx context.Context, namespace string) (map[string]v1.Secret, error) {
+	list, err := p.client.CoreV1().Secrets(namespace).List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
+	m := make(map[string]v1.Secret, len(list.Items))
+	for i := range list.Items {
+		m[list.Items[i].Name] = list.Items[i]
+	}
+	return m, nil
 }

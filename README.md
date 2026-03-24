@@ -54,15 +54,19 @@ kuberadar sweep -o json
 kuberadar explain KR003
 ```
 
-## Exit Codes (CI integration)
+## Exit codes
 
-| Code | Meaning        |
-|------|----------------|
-| 0    | No issues      |
-| 1    | Warnings only  |
-| 2    | Critical issues|
+By default, **exit 0 means the command completed successfully** (cluster was reached and output was produced). Finding issues is normal output, not a failed command.
 
-Example: `kuberadar sweep || exit 1` fails the pipeline on any issues.
+Use **`--fail-on-issues`** for CI-style gates:
+
+| Code | Meaning (only with `--fail-on-issues`) |
+|------|----------------------------------------|
+| 0    | No issues                              |
+| 1    | Warnings only                          |
+| 2    | Critical issues                        |
+
+Example: `kuberadar sweep --fail-on-issues || exit 1` fails the pipeline when any issue is reported.
 
 ## Issue IDs
 

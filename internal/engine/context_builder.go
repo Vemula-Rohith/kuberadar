@@ -13,42 +13,52 @@ import (
 
 // ContextBuilder builds model.Context for resources.
 type ContextBuilder struct {
-	eventProvider       *providers.EventProvider
-	nodeProvider        *providers.NodeProvider
-	podProvider         *providers.PodProvider
-	configProvider      *providers.ConfigProvider
-	pvcProvider         *providers.PVCProvider
+	eventProvider        *providers.EventProvider
+	nodeProvider         *providers.NodeProvider
+	podProvider          *providers.PodProvider
+	configProvider       *providers.ConfigProvider
+	pvcProvider          *providers.PVCProvider
 	storageClassProvider *providers.StorageClassProvider
 }
 
 // NewContextBuilder creates a new ContextBuilder.
 func NewContextBuilder(eventProvider *providers.EventProvider, nodeProvider *providers.NodeProvider, podProvider *providers.PodProvider, configProvider *providers.ConfigProvider, pvcProvider *providers.PVCProvider, storageClassProvider *providers.StorageClassProvider) *ContextBuilder {
 	return &ContextBuilder{
-		eventProvider:       eventProvider,
-		nodeProvider:        nodeProvider,
-		podProvider:         podProvider,
-		configProvider:      configProvider,
-		pvcProvider:         pvcProvider,
+		eventProvider:        eventProvider,
+		nodeProvider:         nodeProvider,
+		podProvider:          podProvider,
+		configProvider:       configProvider,
+		pvcProvider:          pvcProvider,
 		storageClassProvider: storageClassProvider,
 	}
 }
 
-// BuildPodContext fetches events, node, and optionally previous logs for a pod.
+// BuildPodContext fetches optional events, node, and diagnose-only data for a pod.
+// nodeCache is keyed by node name; callers should pass a shared map across pods in one Run
+// so each node is fetched at most once (major win for namespace sweeps).
 // When diagnose is true and the pod is in CrashLoopBackOff, fetches previous container logs.
-func (b *ContextBuilder) BuildPodContext(ctx context.Context, pod v1.Pod, namespace string, diagnose bool) (model.Context, error) {
-	events, err := b.eventProvider.GetEventsForPod(ctx, pod.Namespace, pod.Name)
-	if err != nil {
-		events = nil
+func (b *ContextBuilder) BuildPodContext(ctx context.Context, pod v1.Pod, namespace string, diagnose bool, nodeCache map[string]*v1.Node, configMaps map[string]v1.ConfigMap, secrets map[string]v1.Secret) (model.Context, error) {
+	var events []v1.Event
+	// Events are not consumed by any detector today; listing per pod is N API calls per sweep.
+	// Fetch only in diagnose mode for future use / consistency with deep inspection.
+	if diagnose && b.eventProvider != nil {
+		var err error
+		events, err = b.eventProvider.GetEventsForPod(ctx, pod.Namespace, pod.Name)
+		if err != nil {
+			events = nil
+		}
 	}
 	var node *v1.Node
-	if pod.Spec.NodeName != "" {
-		node, _ = b.nodeProvider.GetNode(ctx, pod.Spec.NodeName)
+	if pod.Spec.NodeName != "" && b.nodeProvider != nil {
+		node = lookupOrFetchNode(ctx, b.nodeProvider, pod.Spec.NodeName, nodeCache)
 	}
 	mctx := model.Context{
-		Pod:       &pod,
-		Events:    events,
-		Node:      node,
-		Namespace: namespace,
+		Pod:        &pod,
+		Events:     events,
+		Node:       node,
+		Namespace:  namespace,
+		ConfigMaps: configMaps,
+		Secrets:    secrets,
 	}
 	if diagnose && b.podProvider != nil {
 		if containerName, _, ok := utils.CrashLoopContainer(&pod); ok {
@@ -161,7 +171,30 @@ func buildPVCErrorInfo(ctx context.Context, pvcProvider *providers.PVCProvider, 
 		Exists:             exists,
 		IsBound:            bound,
 		StorageClassName:   storageClassName,
-		StorageClassExists:  storageClassExists,
+		StorageClassExists: storageClassExists,
 		ReferencedBy:       refStrs,
 	}
+}
+
+// lookupOrFetchNode returns a cached node or fetches it once and stores in cache.
+// Failed lookups are cached as nil to avoid repeated calls for missing nodes.
+func lookupOrFetchNode(ctx context.Context, np *providers.NodeProvider, nodeName string, cache map[string]*v1.Node) *v1.Node {
+	if cache != nil {
+		if n, ok := cache[nodeName]; ok {
+			return n
+		}
+	}
+	n, err := np.GetNode(ctx, nodeName)
+	if cache != nil {
+		if err != nil {
+			cache[nodeName] = nil
+			return nil
+		}
+		cache[nodeName] = n
+		return n
+	}
+	if err != nil {
+		return nil
+	}
+	return n
 }

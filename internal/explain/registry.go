@@ -4,10 +4,10 @@ import "github.com/Vemula-Rohith/kuberadar/internal/constants"
 
 // Entry holds documentation for an issue ID.
 type Entry struct {
-	ID                string
-	Name              string
-	Description       string
-	CommonCauses      []string
+	ID                 string
+	Name               string
+	Description        string
+	CommonCauses       []string
 	RecommendedActions []string
 }
 
@@ -95,6 +95,21 @@ var Registry = map[string]Entry{
 			"verify referenced configmaps exist: kubectl get configmap <name> -n <namespace>",
 			"check pod spec for typos in secret/configmap names",
 			"describe the pod: kubectl describe pod <name> -n <namespace>",
+		},
+	},
+	constants.IssueIDStaleConfig: {
+		ID:          constants.IssueIDStaleConfig,
+		Name:        "StaleConfig",
+		Description: "A ConfigMap or Secret referenced by the pod was updated after the pod started. Mounted files and env injected at creation time do not update automatically.",
+		CommonCauses: []string{
+			"hot-edited ConfigMap or Secret while pods keep running",
+			"CI/CD updated configuration without rolling workloads",
+			"manual kubectl apply on shared config",
+		},
+		RecommendedActions: []string{
+			"restart affected pods or perform a rolling restart of the workload",
+			"verify the running workload reads config as expected after restart",
+			"use versioning in config names if you need zero-downtime config swaps",
 		},
 	},
 }

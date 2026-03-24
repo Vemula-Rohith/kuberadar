@@ -1,12 +1,13 @@
 package cli
 
 import (
-	"context"
+	"fmt"
 
 	"github.com/spf13/cobra"
 
 	"github.com/Vemula-Rohith/kuberadar/internal/model"
 	"github.com/Vemula-Rohith/kuberadar/internal/output"
+	"github.com/Vemula-Rohith/kuberadar/internal/state"
 )
 
 var sweepCmd = &cobra.Command{
@@ -24,13 +25,17 @@ func runSweep(cmd *cobra.Command, _ []string) error {
 		Type:      model.ScopePod,
 		Namespace: namespace,
 	}
-	diagnosis, err := app.engine.Run(context.Background(), scope)
+	diagnosis, err := engineRun(cmd, scope)
 	if err != nil {
 		return err
+	}
+	if err := state.WriteLastSweep(state.EntriesFromDiagnosis(diagnosis)); err != nil {
+		// Non-fatal: sweep output still useful without index file
+		_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "warning: could not save sweep index: %v\n", err)
 	}
 	if err := output.Print(diagnosis, outputFmt, output.Options{}); err != nil {
 		return err
 	}
-	ExitWithCode(diagnosis)
+	FinishDiagnosis(diagnosis)
 	return nil
 }
